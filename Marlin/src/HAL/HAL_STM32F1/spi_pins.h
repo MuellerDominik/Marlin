@@ -27,7 +27,17 @@
  *
  * Any PIN can be used for Chip Select (SS)
  */
-#define SCK_PIN   PA5
-#define MISO_PIN  PA6
-#define MOSI_PIN  PA7
-#define SS_PIN    PA4
+// #define SCK_PIN   PA5
+// #define MISO_PIN  PA6
+// #define MOSI_PIN  PA7
+// #define SS_PIN    PA4
+
+#define SCK_PIN   PB13
+#define MISO_PIN  PB14
+#define MOSI_PIN  PB15
+#define SS_PIN    PB12
+
+// #define PIN_SPI_SCK     PB13
+// #define PIN_SPI_MISO    PB14
+// #define PIN_SPI_MOSI    PB15
+// #define PIN_SPI_SS      PB12
