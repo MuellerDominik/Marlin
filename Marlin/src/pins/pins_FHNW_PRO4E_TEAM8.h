@@ -22,117 +22,183 @@
 
 /**
  * FHNW pro4E Team8 (STM32F130ZET6, TMC2660 drivers) board pin assignments
+ * loosely based on the MKS Robin, changes made by Dominik Mueller
+ * 
+ * Note: SPI2 interface is used. Maple core has to be configured accordingly:
+ *       Change `SPIClass SPI(1);` to `SPIClass SPI(2);` in `SPI.cpp` file
  */
 
 #ifndef __STM32F1__
   #error "Oops! Select an STM32F1 board in 'Tools > Board.'"
 #endif
 
-#if HOTENDS > 2 || E_STEPPERS > 2
-  #error "Max. 2 extruders supported."
+/**
+ * Expansion board
+ */
+// #define EXPANSION_BOARD
+
+#if defined(EXPANSION_BOARD)
+  #define MAX_HOTENDS 3
+#else
+  #define MAX_HOTENDS 1
 #endif
 
+#if HOTENDS > MAX_HOTENDS || E_STEPPERS > MAX_HOTENDS
+  #error "More extruders configured than supported by this board."
+#endif
+
+/**
+ * Board name
+ */
 #define BOARD_NAME "FHNW pro4E Team8"
 
-//
-// Release PB4 (Y_ENABLE_PIN) from JTAG NRST role
-//
+/**
+ * Disables JTAG and SWD
+ * (to get more GPIO pins)
+ */
 // #define DISABLE_DEBUG
 
-//
-// Servos
-//
-#define SERVO0_PIN         PC3   // XS1 - 5
-#define SERVO1_PIN         PA1   // XS1 - 6
-#define SERVO2_PIN         PF9   // XS2 - 5
-#define SERVO3_PIN         PF8   // XS2 - 6
+/**
+ * Display (EXP3, wrongly labeled as EXT3 on the board)
+ * Creality LCD (128 x 64 dot matrix)
+ */
+#define BEEPER_PIN          PE3     // EXP3-1 (J202-1) [LCD_Beeper]
 
-//
-// Limit Switches
-//
-#define X_MIN_PIN          -1 // PB12
-#define X_MAX_PIN          PB0
-#define Y_MIN_PIN          PC5
-#define Y_MAX_PIN          PC4
-#define Z_MIN_PIN          PA4
-#define Z_MAX_PIN          PF7
+#define BTN_EN1             PE4     // EXP3-5 (J202-5) [LCD_Encoder_A]
+#define BTN_EN2             PE5     // EXP3-3 (J202-3) [LCD_Encoder_B]
+#define BTN_ENC             PE6     // EXP3-2 (J202-2) [LCD_Encoder_BTN]
 
-//
-// Steppers
-//
-#define X_ENABLE_PIN       PB9
-#define X_STEP_PIN         PB8
-#define X_DIR_PIN          PB5
-#define X_CS_PIN           PB12 // PD8
+#define LCD_PINS_RS         PF1     // J3-9 EXP3-7 (J202-7) [LCD_CS]
+#define LCD_PINS_ENABLE     PF2     // EXP3-8 (J202-8) [LCD_MOSI]
+#define LCD_PINS_D4         PF3     // EXP3-6 (J202-6) [LCD_SCK]
 
-#define Y_ENABLE_PIN       PB4
-#define Y_STEP_PIN         PG15
-#define Y_DIR_PIN          PG10
-//#define Y_CS_PIN           PC2
+/**
+ * Servos (enables BLTouch support)
+ * only two servo headers are present on the board
+ * (two more can be configured through the expansion board)
+ */
+#define SERVO0_PIN          PC3
+#define SERVO1_PIN          PA1
+// #define SERVO2_PIN          -1
+// #define SERVO3_PIN          -1
 
-#define Z_ENABLE_PIN       PD7
-#define Z_STEP_PIN         PD3
-#define Z_DIR_PIN          PG14
-//#define Z_CS_PIN           PC2
+/**
+ * Endstops
+ */
+#define X_MIN_PIN           -1
+#define X_MAX_PIN           -1
+#define Y_MIN_PIN           PC5
+#define Y_MAX_PIN           -1
+#define Z_MIN_PIN           PA4
+#define Z_MAX_PIN           -1
 
-// #define Z3_ENABLE_PIN      PD7
-// #define Z3_STEP_PIN        PD3
-// #define Z3_DIR_PIN         PG14
-// #define Z3_CS_PIN          
+/**
+ * Steppers
+ */
+#define X_ENABLE_PIN        PB9
+#define X_STEP_PIN          PB8
+#define X_DIR_PIN           PB5
+#define X_CS_PIN            PB12
 
-#define E0_ENABLE_PIN      PG13
-#define E0_STEP_PIN        PG8
-#define E0_DIR_PIN         PA15
-//#define E0_CS_PIN          PC2
+#define Y_ENABLE_PIN        PB4
+#define Y_STEP_PIN          PG15
+#define Y_DIR_PIN           PG10
+#define Y_CS_PIN            -1
 
-// #define E1_ENABLE_PIN      PA12
-// #define E1_STEP_PIN        PA11
-// #define E1_DIR_PIN         PA8
-// #define E1_CS_PIN          
+#define Z_ENABLE_PIN        PD7
+#define Z_STEP_PIN          PD3
+#define Z_DIR_PIN           PG14
+#define Z_CS_PIN            -1
 
-//
-// Temperature Sensors
-//
-#define TEMP_0_PIN         PC1   // TH1
-// #define TEMP_1_PIN         PC2   // TH2
-#define TEMP_BED_PIN       PC0   // TB1
+#if defined(EXPANSION_BOARD)
+  // #define Z3_ENABLE_PIN       PD7
+  // #define Z3_STEP_PIN         PD3
+  // #define Z3_DIR_PIN          PG14
+  // #define Z3_CS_PIN           -1
+#endif
 
-//
-// Heaters / Fans
-//
-#define HEATER_0_PIN       PC7   // HEATER1
-// #define HEATER_1_PIN       PA6   // HEATER2
-#define HEATER_BED_PIN     PC6   // HOT BED
+#define E0_ENABLE_PIN       PG13
+#define E0_STEP_PIN         PG8
+#define E0_DIR_PIN          PA15
+#define E0_CS_PIN           -1
+
+#if defined(EXPANSION_BOARD)
+  // #define E1_ENABLE_PIN       PA12
+  // #define E1_STEP_PIN         PA11
+  // #define E1_DIR_PIN          PA8
+  // #define E1_CS_PIN           -1
+
+  // #define E2_ENABLE_PIN       PA12
+  // #define E2_STEP_PIN         PA11
+  // #define E2_DIR_PIN          PA8
+  // #define E2_CS_PIN           -1
+#endif
+
+/**
+ * Temperature sensors
+ */
+#define TEMP_0_PIN          PC1 // TH1
+#if defined(EXPANSION_BOARD)
+  // #define TEMP_1_PIN          -1 // TH2
+  // #define TEMP_2_PIN          -1 // TH2
+#endif
+#define TEMP_BED_PIN        PC0 // TB1
+
+/**
+ * Heaters / Fans
+ */
+#define HEATER_0_PIN        PC7 // HEATER1
+#if defined(EXPANSION_BOARD)
+  // #define HEATER_1_PIN        -1 // HEATER2
+  // #define HEATER_2_PIN        -1
+#endif
+#define HEATER_BED_PIN      PC6 // HOT BED
 
 #define FAN_PIN            PB1 // PA7   // FAN
-// second FAN?
+#if defined(EXPANSION_BOARD)
+#endif
+// More FANs?
+// CONTROLLER_FAN_PIN for the PCB-FAN (PCB-FAN of the expansion board)
+// E0_AUTO_FAN_PIN / E1_AUTO_FAN_PIN / E2_AUTO_FAN_PIN
+// CHAMBER_AUTO_FAN_PIN
 
 // ToDo: remove unused macros
 
-/**
- * Note: MKS Robin board is using SPI2 interface. Make sure your stm32duino library is configured accordingly
- */
-//#define MAX6675_SS_PIN     PE5  // TC1 - CS1
-//#define MAX6675_SS_PIN     PE6  // TC2 - CS2
+// #define POWER_LOSS_PIN     -1   // PW_DET
+// #define PS_ON_PIN          -1   // PW_OFF
 
-// #define POWER_LOSS_PIN     PA2   // PW_DET
-// #define PS_ON_PIN          PA3   // PW_OFF
 #define FIL_RUNOUT_PIN     PF11  // MT_DET
+#if defined(EXPANSION_BOARD)
+#endif
+// FIL_RUNOUT2_PIN / FIL_RUNOUT3_PIN
 
-#define BEEPER_PIN         PC13
 #define LED_PIN            PE2
 
+
 /**
+ * SD card (uSD)
+ */
+#define SD_DETECT_PIN      PF12
+#define SDSS               -1 // not required, SDIO interface is used
+// #define LCD_SDSS           -1 // not present
+
+/**
+ * MKS Robin TFT
+ * (FHNW pro4E Team8 board doesn't support this at the moment!)
+ * 
  * Note: MKS Robin TFT screens may have different TFT controllers
  * If the screen stays white, disable 'LCD_RESET_PIN' to rely on the bootloader to do screen initialization.
- *
+ * 
  * Enabling 'LCD_RESET_PIN' causes flickering when entering the LCD menu due to LCD controller reset.
  * Reset feature was designed to "revive the LCD if static electricity killed it."
  */
-//#define LCD_RESET_PIN      PF6
-//#define LCD_BACKLIGHT_PIN  PG11
-//#define FSMC_CS_PIN        PG12  // NE4
-//#define FSMC_RS_PIN        PF0   // A0
-
-//#define SD_DETECT_PIN      PF12
-//#define SDSS               -1
+#if defined(MKS_ROBIN_TFT)
+  // Pin usage (32 pin connector, including supply and NC pins):
+  // Data D0-D15 (PD14, PD15, PD0, PD1, PE7-PE15, PD8-PD10)
+  // NOE: Read operation (PD4) / NWE: Write operation (PD5)
+  // SPI2 (PB13, PB14, PB15) / Unknown (PB1, PC13)
+  #define LCD_RESET_PIN       PF6     // Reset
+  #define LCD_BACKLIGHT_PIN   PG11    // Backlight
+  #define FSMC_CS_PIN         PG12    // NE4 (Chip Select)
+  #define FSMC_RS_PIN         PF0     // A0 (LCD Register Select)
+#endif
