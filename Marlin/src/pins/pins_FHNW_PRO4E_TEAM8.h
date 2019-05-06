@@ -88,8 +88,8 @@
  * SD card (uSD)
  */
 #define SD_DETECT_PIN       PA11
-#define SDSS                -1 // not required, SDIO interface is used
-// #define LCD_SDSS            -1 // not present
+#define SDSS                -1      // not required, SDIO interface is used
+// #define LCD_SDSS            -1      // not present
 
 /**
  * Servos (enables BLTouch support)
@@ -102,21 +102,6 @@
 #if defined(EXPANSION_BOARD)
   // #define SERVO2_PIN          -1      // any GPIO pin from expansion header
   // #define SERVO3_PIN          -1      // any GPIO pin from expansion header
-#endif
-
-/**
- * Endstops
- */
-#define X_MIN_PIN           PF1     // [EXTI1]
-#define X_MAX_PIN           -1
-#define Y_MIN_PIN           PF2     // [EXTI2]
-#define Y_MAX_PIN           -1
-#define Z_MIN_PIN           PE5     // [EXTI5]
-#define Z_MAX_PIN           -1
-#define FIL_RUNOUT_PIN      PE4     // [EXTI4]
-#if defined(EXPANSION_BOARD)
-  // #define FIL_RUNOUT2_PIN     PG14    // [EXTI14]
-  // #define FIL_RUNOUT3_PIN     PF0     // [EXTI0]
 #endif
 
 /**
@@ -168,6 +153,28 @@
   // #define E2_DIR_PIN          PG9
   // #define E2_CS_PIN           PD15
   // #define E2_SG_PIN           PG12    // [EXTI12]
+#endif
+
+/**
+ * Endstops
+ * 
+ * NO: Endstop inverting must be set to true in Configuration.h
+ * NC: Endstop inverting must be set to false in Configuration.h
+ * 
+ * Software pull-up resistors should be turned off.
+ * 
+ * Note: There is a problem in the `SanityCheck.h` file when using the TMC2660 StallGuard as an endstop.
+ */
+#define X_MIN_PIN           X_SG_PIN  // PF1     // [EXTI1]
+#define X_MAX_PIN           -1
+#define Y_MIN_PIN           Y_SG_PIN  // PF2     // [EXTI2]
+#define Y_MAX_PIN           -1
+#define Z_MIN_PIN           Z_SG_PIN  // PE5     // [EXTI5]
+#define Z_MAX_PIN           -1
+#define FIL_RUNOUT_PIN      PE4       // [EXTI4]
+#if defined(EXPANSION_BOARD)
+  // #define FIL_RUNOUT2_PIN     PG14      // [EXTI14]
+  // #define FIL_RUNOUT3_PIN     PF0       // [EXTI0]
 #endif
 
 /**
