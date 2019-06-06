@@ -204,7 +204,7 @@ void MarlinUI::set_font(const MarlinFont font_nr) {
       #endif
     } while (u8g.nextPage());
     #ifndef BOOTSCREEN_TIMEOUT
-      #define BOOTSCREEN_TIMEOUT 2500
+      #define BOOTSCREEN_TIMEOUT 500
     #endif
     safe_delay(BOOTSCREEN_TIMEOUT);
   }

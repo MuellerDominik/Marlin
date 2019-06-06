@@ -45,8 +45,8 @@
     #define U8G_COM_ST7920_HAL_SW_SPI u8g_com_arduino_st7920_spi_fn
   #endif
 
-  uint8_t u8g_com_arduino_st7920_hw_spi_fn(u8g_t *u8g, uint8_t msg, uint8_t arg_val, void *arg_ptr);
-  #define U8G_COM_ST7920_HAL_HW_SPI u8g_com_arduino_st7920_hw_spi_fn
+  uint8_t u8g_com_stm32duino_hw_spi_fn(u8g_t *u8g, uint8_t msg, uint8_t arg_val, void *arg_ptr);
+  #define U8G_COM_ST7920_HAL_HW_SPI u8g_com_stm32duino_hw_spi_fn
 
   uint8_t u8g_com_HAL_LPC1768_ssd_hw_i2c_fn(u8g_t *u8g, uint8_t msg, uint8_t arg_val, void *arg_ptr);
   #define U8G_COM_SSD_I2C_HAL u8g_com_arduino_ssd_i2c_fn

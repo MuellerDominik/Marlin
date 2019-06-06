@@ -27,6 +27,7 @@
 
 #include "gcode.h"
 GcodeSuite gcode;
+static bool first_home = true;
 
 #include "parser.h"
 #include "queue.h"
@@ -244,7 +245,7 @@ void GcodeSuite::process_parsed_command(
         case 27: G27(); break;                                    // G27: Nozzle Park
       #endif
 
-      case 28: G28(false); break;                                 // G28: Home all axes, one at a time
+      case 28: if (first_home) {G28(false); first_home = false;} G28(false); break;                                 // G28: Home all axes, one at a time
 
       #if HAS_LEVELING
         case 29:                                                  // G29: Bed leveling calibration

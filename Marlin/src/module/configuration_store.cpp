@@ -3164,7 +3164,7 @@ void MarlinSettings::reset() {
        * TMC Sensorless homing thresholds
        */
       #if USE_SENSORLESS
-        CONFIG_ECHO_HEADING("TMC2130 StallGuard threshold:");
+        CONFIG_ECHO_HEADING("TMC2660 StallGuard threshold:");
         CONFIG_ECHO_START();
         #if X_SENSORLESS || Y_SENSORLESS || Z_SENSORLESS
           say_M914();

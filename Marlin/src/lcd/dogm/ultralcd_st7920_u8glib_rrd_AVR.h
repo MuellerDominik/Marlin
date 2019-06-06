@@ -25,7 +25,7 @@
 
 #include "../../inc/MarlinConfig.h"
 
-#if ENABLED(U8GLIB_ST7920) && !defined(U8G_HAL_LINKS) && !defined(__SAM3X8E__)
+#if 0
 
 #include "../../HAL/shared/Delay.h"
 

@@ -71,8 +71,8 @@
 #define BTN_ENC             PE3     // EXP3-2 (J202-2) [LCD_Encoder_BTN] [EXTI3]
 
 #define LCD_PINS_RS         PE0     // EXP3-7 (J202-7) [LCD_CS]
-#define LCD_PINS_ENABLE     PB15    // EXP3-8 (J202-8) [LCD_MOSI]
-#define LCD_PINS_D4         PB13    // EXP3-6 (J202-6) [LCD_SCK]
+#define LCD_PINS_ENABLE     PB15    // EXP3-8 (J202-8) [LCD_MOSI] / Fallback SW-SPI: PE2
+#define LCD_PINS_D4         PB13    // EXP3-6 (J202-6) [LCD_SCK] / Fallback SW-SPI: PE6
 
 /**
  * Developer Interface
@@ -92,10 +92,15 @@
 // #define LCD_SDSS            -1      // not present
 
 /**
- * Servos (enables BLTouch support)
+ * Servos (enables e.g. BLTouch support)
  * 
  * only two servo headers are present on the board, both wrongly labeled `Servo 1`
  * (two more can be configured through the expansion board)
+ * 
+ * Note: There is an error in the include guard of the `servo.cpp` file.
+ *       It wrongly checks, if the macro `STM32F1` instead of `__STM32F1__` is defined.
+ * 
+ * Note 2: At the moment it is not possible to enable the servo pins due to the lack of software PWM support.
  */
 #define SERVO0_PIN          PD6     // J605 (BOTTOM)
 #define SERVO1_PIN          PD7     // J606 (TOP)
@@ -122,7 +127,7 @@
 #define Z_ENABLE_PIN        PG2
 #define Z_STEP_PIN          PD11
 #define Z_DIR_PIN           PD12
-#define Z_CS_PIN            PG13
+#define Z_CS_PIN            PG3
 #define Z_SG_PIN            PD13    // [EXTI13]
 
 // Second z-axis
@@ -158,20 +163,24 @@
 /**
  * Endstops
  * 
- * NO: Endstop inverting must be set to true in Configuration.h
- * NC: Endstop inverting must be set to false in Configuration.h
+ * NO:     Endstop inverting must be set to true in Configuration.h
+ * NC:     Endstop inverting must be set to false in Configuration.h
+ * SG_TST: Endstop inverting must be set to false in Configuration.h
  * 
- * Software pull-up resistors should be turned off.
+ * Software pull-up / pull-down resistors should be turned off (`ENDSTOPPULLUPS` and `ENDSTOPPULLDOWNS`).
+ * Pull-up resistors (10 kOhm) are already present on the board itself.
  * 
- * Note: There is a problem in the `SanityCheck.h` file when using the TMC2660 StallGuard as an endstop.
+ * Note: There is a problem in the `SanityCheck.h` file when using the TMC2660 stallGuard2 (`SG_TST` pin) as an endstop.
+ *       This is due to the fact that the TMC2660 `SG_TST` pin is always push-pull and the default setup of the TMC2130 `DIAG1` pin is open-drain.
+ *       Thus, to use the TMC2660 `SG_TST` pin as an endstop neither a software pull-up nor an inverted signal interpretation is necessary.
  */
-#define X_MIN_PIN           X_SG_PIN  // PF1     // [EXTI1]
+#define X_MIN_PIN           X_SG_PIN // PF1      // [EXTI1]
 #define X_MAX_PIN           -1
-#define Y_MIN_PIN           Y_SG_PIN  // PF2     // [EXTI2]
+#define Y_MIN_PIN           Y_SG_PIN // PF2      // [EXTI2]
 #define Y_MAX_PIN           -1
-#define Z_MIN_PIN           Z_SG_PIN  // PE5     // [EXTI5]
+#define Z_MIN_PIN           PE5 // Z_SG_PIN      // [EXTI5]
 #define Z_MAX_PIN           -1
-#define FIL_RUNOUT_PIN      PE4       // [EXTI4]
+#define FIL_RUNOUT_PIN      PE4 // E0_SG_PIN     // [EXTI4]
 #if defined(EXPANSION_BOARD)
   // #define FIL_RUNOUT2_PIN     PG14      // [EXTI14]
   // #define FIL_RUNOUT3_PIN     PF0       // [EXTI0]
@@ -225,7 +234,8 @@
   // #define E2_AUTO_FAN_PIN     PE11    // [EXT2_FAN2] used to cool the hot end
 #endif
 
-// `USE_CONTROLLER_FAN` is disabled at the moment due to the lack of software PWM support.
+// `USE_CONTROLLER_FAN` feature must be configured to use software PWM in `controllerfan.cpp`.
+// To achieve this, the following line has to be removed: `analogWrite(CONTROLLER_FAN_PIN, speed);`.
 #define CONTROLLER_FAN_PIN  PF5     // [FAN3] used to cool the FETs and the stepper drivers on the PCB
 
 /**

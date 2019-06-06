@@ -54,6 +54,7 @@
  */
 
 #include "../../inc/MarlinConfigPre.h"
+#include "../../HAL/shared/Delay.h"
 
 #if HAS_GRAPHICAL_LCD
 
@@ -63,7 +64,7 @@
 
 #define LCD_PIXEL_WIDTH  128
 #define LCD_PIXEL_HEIGHT  64
-#define PAGE_HEIGHT        8
+#define PAGE_HEIGHT       32
 
 /* init sequence from https://github.com/adafruit/ST7565-LCD/blob/master/ST7565/ST7565.cpp */
 static const uint8_t u8g_dev_st7920_128x64_HAL_init_seq[] PROGMEM = {
@@ -148,45 +149,103 @@ uint8_t u8g_dev_st7920_128x64_HAL_fn(u8g_t *u8g, u8g_dev_t *dev, uint8_t msg, vo
   return u8g_dev_pb8h1_base_fn(u8g, dev, msg, arg);
 }
 
+#define U8G_DELAY() DELAY_US(10)
+
+#define ST7920_CS()              { u8g_SetChipSelect(u8g, dev, 1); U8G_DELAY(); }
+#define ST7920_NCS()             { u8g_SetChipSelect(u8g, dev, 0); }
+#define ST7920_SET_CMD()         { u8g_WriteByte(u8g, dev, 0xF8); U8G_DELAY(); }
+#define ST7920_SET_DAT()         { u8g_WriteByte(u8g, dev, 0xFA); U8G_DELAY(); }
+#define ST7920_WRITE_BYTE(a)     { u8g_WriteByte(u8g, dev, (uint8_t)((a)&0xF0u)); u8g_WriteByte(u8g, dev, (uint8_t)((a)<<4u)); U8G_DELAY(); }
+#define ST7920_WRITE_BYTES(p,l)  { for (uint8_t i = l + 1; --i;) { u8g_WriteByte(u8g, dev, *p&0xF0); u8g_WriteByte(u8g, dev, *p<<4); p++; } U8G_DELAY(); }
+
 uint8_t u8g_dev_st7920_128x64_HAL_4x_fn(u8g_t *u8g, u8g_dev_t *dev, uint8_t msg, void *arg) {
+  uint8_t i, y;
   switch (msg) {
-    case U8G_DEV_MSG_INIT:
+    case U8G_DEV_MSG_INIT: {
       u8g_InitCom(u8g, dev, U8G_SPI_CLK_CYCLE_400NS);
-      u8g_WriteEscSeqP(u8g, dev, u8g_dev_st7920_128x64_HAL_init_seq);
-      clear_graphics_DRAM(u8g, dev);
+      ST7920_CS();
+      u8g_Delay(120);
+      ST7920_SET_CMD();
+      ST7920_WRITE_BYTE(0x20);        // Non-extended mode
+      ST7920_WRITE_BYTE(0x08);        // Display off, cursor+blink off
+      ST7920_WRITE_BYTE(0x01);        // Clear DDRAM ram
+      u8g_Delay(15);                  // Delay for DDRAM clear
+      ST7920_WRITE_BYTE(0x24);        // Extended mode
+      ST7920_WRITE_BYTE(0x26);        // Extended mode + GDRAM active
+      for (y = 0; y < (LCD_PIXEL_HEIGHT) / 2; y++) {  // Clear GDRAM
+        ST7920_WRITE_BYTE(0x80 | y);  // Set y
+        ST7920_WRITE_BYTE(0x80);      // Set x = 0
+        ST7920_SET_DAT();
+        for (i = 0; i < 2 * (LCD_PIXEL_WIDTH) / 8; i++) // 2x width clears both segments
+          ST7920_WRITE_BYTE(0);
+        ST7920_SET_CMD();
+      }
+      ST7920_WRITE_BYTE(0x0C);        // Display on, cursor+blink off
+      ST7920_NCS();
+    }
+
+
+      //u8g_WriteEscSeqP(u8g, dev, u8g_dev_st7920_128x64_HAL_init_seq);
+      //clear_graphics_DRAM(u8g, dev);
       break;
 
     case U8G_DEV_MSG_STOP:
       break;
 
     case U8G_DEV_MSG_PAGE_NEXT: {
-      uint8_t y, i;
-      uint8_t *ptr;
-      u8g_pb_t *pb = (u8g_pb_t *)(dev->dev_mem);
-
-      u8g_SetAddress(u8g, dev, 0);           /* cmd mode */
-      u8g_SetChipSelect(u8g, dev, 1);
+      uint8_t* ptr;
+      u8g_pb_t* pb = (u8g_pb_t*)(dev->dev_mem);
       y = pb->p.page_y0;
-      ptr = (uint8_t *)pb->buf;
-      for (i = 0; i < 32; i ++) {
-        u8g_SetAddress(u8g, dev, 0);           /* cmd mode */
-        u8g_WriteByte(u8g, dev, 0x03E );      /* enable extended mode */
+      ptr = (uint8_t*)pb->buf;
 
+      ST7920_CS();
+      for (i = 0; i < PAGE_HEIGHT; i ++) {
+        ST7920_SET_CMD();
         if (y < 32) {
-          u8g_WriteByte(u8g, dev, 0x080 | y );      /* y pos  */
-          u8g_WriteByte(u8g, dev, 0x080  );      /* set x pos to 0*/
+          ST7920_WRITE_BYTE(0x80 | y);        // y
+          ST7920_WRITE_BYTE(0x80);            // x = 0
         }
         else {
-          u8g_WriteByte(u8g, dev, 0x080 | (y-32) );      /* y pos  */
-          u8g_WriteByte(u8g, dev, 0x080 | 8);      /* set x pos to 64*/
+          ST7920_WRITE_BYTE(0x80 | (y - 32)); // y
+          ST7920_WRITE_BYTE(0x80 | 8);        // x = 64
         }
-
-        u8g_SetAddress(u8g, dev, 1);                  /* data mode */
-        u8g_WriteSequence(u8g, dev, (LCD_PIXEL_WIDTH) / 8, ptr);
-        ptr += (LCD_PIXEL_WIDTH) / 8;
+        ST7920_SET_DAT();
+        ST7920_WRITE_BYTES(ptr, (LCD_PIXEL_WIDTH) / 8); // ptr incremented inside of macro!
         y++;
       }
-      u8g_SetChipSelect(u8g, dev, 0);
+      ST7920_NCS();
+
+
+
+
+
+      // uint8_t y, i;
+      // uint8_t *ptr;
+      // u8g_pb_t *pb = (u8g_pb_t *)(dev->dev_mem);
+
+      // u8g_SetAddress(u8g, dev, 0);           /* cmd mode */
+      // u8g_SetChipSelect(u8g, dev, 1);
+      // y = pb->p.page_y0;
+      // ptr = (uint8_t *)pb->buf;
+      // for (i = 0; i < 32; i ++) {
+      //   u8g_SetAddress(u8g, dev, 0);           /* cmd mode */
+      //   u8g_WriteByte(u8g, dev, 0x03E );      /* enable extended mode */
+
+      //   if (y < 32) {
+      //     u8g_WriteByte(u8g, dev, 0x080 | y );      /* y pos  */
+      //     u8g_WriteByte(u8g, dev, 0x080  );      /* set x pos to 0*/
+      //   }
+      //   else {
+      //     u8g_WriteByte(u8g, dev, 0x080 | (y-32) );      /* y pos  */
+      //     u8g_WriteByte(u8g, dev, 0x080 | 8);      /* set x pos to 64*/
+      //   }
+
+      //   u8g_SetAddress(u8g, dev, 1);                  /* data mode */
+      //   u8g_WriteSequence(u8g, dev, (LCD_PIXEL_WIDTH) / 8, ptr);
+      //   ptr += (LCD_PIXEL_WIDTH) / 8;
+      //   y++;
+      // }
+      // u8g_SetChipSelect(u8g, dev, 0);
     }
     break;
   }
@@ -203,10 +262,10 @@ u8g_dev_t u8g_dev_st7920_128x64_HAL_4x_sw_spi = { u8g_dev_st7920_128x64_HAL_4x_f
 U8G_PB_DEV(u8g_dev_st7920_128x64_HAL_hw_spi, LCD_PIXEL_WIDTH, LCD_PIXEL_HEIGHT, PAGE_HEIGHT, u8g_dev_st7920_128x64_HAL_fn, U8G_COM_ST7920_HAL_HW_SPI);
 u8g_dev_t u8g_dev_st7920_128x64_HAL_4x_hw_spi = { u8g_dev_st7920_128x64_HAL_4x_fn, &u8g_dev_st7920_128x64_HAL_4x_pb, U8G_COM_ST7920_HAL_HW_SPI };
 
-#if defined(U8G_HAL_LINKS) || defined(__SAM3X8E__)
+#if 1
   // Also use this device for HAL version of rrd class. This results in the same device being used
   // for the ST7920 for HAL systems no matter what is selected in ultralcd_impl_DOGM.h.
-  u8g_dev_t u8g_dev_st7920_128x64_rrd_sw_spi = { u8g_dev_st7920_128x64_HAL_4x_fn, &u8g_dev_st7920_128x64_HAL_4x_pb, U8G_COM_ST7920_HAL_SW_SPI };
+  u8g_dev_t u8g_dev_st7920_128x64_rrd_sw_spi = { u8g_dev_st7920_128x64_HAL_4x_fn, &u8g_dev_st7920_128x64_HAL_4x_pb, U8G_COM_ST7920_HAL_HW_SPI };
 #endif
 
 #endif // HAS_GRAPHICAL_LCD

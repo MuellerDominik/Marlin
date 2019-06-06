@@ -237,7 +237,7 @@
 // When first starting the main fan, run it at full speed for the
 // given number of milliseconds.  This gets the fan spinning reliably
 // before setting a PWM value. (Does not work with software PWM for fan on Sanguinololu)
-//#define FAN_KICKSTART_TIME 100
+#define FAN_KICKSTART_TIME 100
 
 /**
  * PWM Fan Scaling
@@ -251,8 +251,8 @@
  *
  * Define one or both of these to override the default 0-255 range.
  */
-//#define FAN_MIN_PWM 50
-//#define FAN_MAX_PWM 128
+#define FAN_MIN_PWM 50
+#define FAN_MAX_PWM 255
 
 /**
  * FAST PWM FAN Settings
@@ -302,7 +302,7 @@
 #define E4_AUTO_FAN_PIN -1
 #define E5_AUTO_FAN_PIN -1
 #define CHAMBER_AUTO_FAN_PIN -1
-#define EXTRUDER_AUTO_FAN_TEMPERATURE 50
+#define EXTRUDER_AUTO_FAN_TEMPERATURE 40
 #define EXTRUDER_AUTO_FAN_SPEED 255   // 255 == full speed
 
 /**
@@ -464,12 +464,12 @@
 // @section homing
 
 // Homing hits each endstop, retracts by these distances, then does a slower bump.
-#define X_HOME_BUMP_MM 5
-#define Y_HOME_BUMP_MM 5
+#define X_HOME_BUMP_MM 0 // 20 testing
+#define Y_HOME_BUMP_MM 0
 #define Z_HOME_BUMP_MM 2
 #define HOMING_BUMP_DIVISOR { 2, 2, 4 }  // Re-Bump Speed Divisor (Divides the Homing Feedrate)
-#define QUICK_HOME                     // If homing includes X and Y, do a diagonal move initially
-//#define HOMING_BACKOFF_MM { 2, 2, 2 }  // (mm) Move away from the endstops after homing
+// #define QUICK_HOME                     // If homing includes X and Y, do a diagonal move initially
+#define HOMING_BACKOFF_MM { 10, 10, 0 }  // (mm) Move away from the endstops after homing
 
 // When G28 is called, this option will make Y home before X
 //#define HOME_Y_BEFORE_X
@@ -995,9 +995,9 @@
   //#define BOOT_MARLIN_LOGO_SMALL    // Show a smaller Marlin logo on the Boot Screen (saving 399 bytes of flash)
 
   // Frivolous Game Options
-  //#define MARLIN_BRICKOUT
-  //#define MARLIN_INVADERS
-  //#define MARLIN_SNAKE
+  #define MARLIN_BRICKOUT
+  // #define MARLIN_INVADERS
+  #define MARLIN_SNAKE
 
 #endif // HAS_GRAPHICAL_LCD
 
@@ -1492,13 +1492,13 @@
  */
 #if HAS_TRINAMIC
 
-  #define HOLD_MULTIPLIER    0.5  // Scales down the holding current from run current
+  #define HOLD_MULTIPLIER    0.4  // Scales down the holding current from run current
   #define INTERPOLATE       true  // Interpolate X/Y/Z_MICROSTEPS to 256
 
-  #if AXIS_IS_TMC(X)
-    #define X_CURRENT     400  // (mA) RMS current. Multiply by 1.414 for peak current.
+  #if AXIS_IS_TMC(X) // X
+    #define X_CURRENT     400 // 200  // (mA) RMS current. Multiply by 1.414 for peak current.
     #define X_MICROSTEPS   32  // 0..256
-    #define X_RSENSE     0.15
+    #define X_RSENSE     0.27
   #endif
 
   #if AXIS_IS_TMC(X2)
@@ -1507,10 +1507,10 @@
     #define X2_RSENSE    0.11
   #endif
 
-  #if AXIS_IS_TMC(Y)
-    #define Y_CURRENT     400
+  #if AXIS_IS_TMC(Y) // Y
+    #define Y_CURRENT     400 // 200
     #define Y_MICROSTEPS   32
-    #define Y_RSENSE     0.15
+    #define Y_RSENSE     0.27
   #endif
 
   #if AXIS_IS_TMC(Y2)
@@ -1519,7 +1519,7 @@
     #define Y2_RSENSE    0.11
   #endif
 
-  #if AXIS_IS_TMC(Z)
+  #if AXIS_IS_TMC(Z) // Z
     #define Z_CURRENT     600
     #define Z_MICROSTEPS   32
     #define Z_RSENSE     0.15
@@ -1531,28 +1531,28 @@
     #define Z2_RSENSE    0.11
   #endif
 
-  #if AXIS_IS_TMC(Z3)
+  #if AXIS_IS_TMC(Z3) // Expansion board
     #define Z3_CURRENT    600
     #define Z3_MICROSTEPS  32
     #define Z3_RSENSE    0.15
   #endif
 
-  #if AXIS_IS_TMC(E0)
-    #define E0_CURRENT    400
+  #if AXIS_IS_TMC(E0) // E0
+    #define E0_CURRENT    400 // 200
     #define E0_MICROSTEPS  32
-    #define E0_RSENSE    0.15
+    #define E0_RSENSE    0.27
   #endif
 
-  #if AXIS_IS_TMC(E1)
+  #if AXIS_IS_TMC(E1) // Expansion board
     #define E1_CURRENT    400
     #define E1_MICROSTEPS  32
-    #define E1_RSENSE    0.15
+    #define E1_RSENSE    0.27
   #endif
 
-  #if AXIS_IS_TMC(E2)
+  #if AXIS_IS_TMC(E2) // Expansion board
     #define E2_CURRENT    400
     #define E2_MICROSTEPS  32
-    #define E2_RSENSE    0.15
+    #define E2_RSENSE    0.27
   #endif
 
   #if AXIS_IS_TMC(E3)
@@ -1701,9 +1701,9 @@
   //#define SENSORLESS_PROBING // TMC2130 only
 
   #if EITHER(SENSORLESS_HOMING, SENSORLESS_PROBING)
-    #define X_STALL_SENSITIVITY  8
-    #define Y_STALL_SENSITIVITY  7
-    #define Z_STALL_SENSITIVITY  8
+    #define X_STALL_SENSITIVITY  6
+    #define Y_STALL_SENSITIVITY  5
+    // #define Z_STALL_SENSITIVITY  3
   #endif
 
   /**
