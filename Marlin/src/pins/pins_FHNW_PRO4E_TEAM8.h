@@ -74,6 +74,9 @@
 #define LCD_PINS_ENABLE     PB15    // EXP3-8 (J202-8) [LCD_MOSI] / Fallback SW-SPI: PE2
 #define LCD_PINS_D4         PB13    // EXP3-6 (J202-6) [LCD_SCK] / Fallback SW-SPI: PE6
 
+// Draw alternative Bootscreen (Bat)
+// #define DRAW_ALT_BOOTSCREEN
+
 /**
  * Developer Interface
  */

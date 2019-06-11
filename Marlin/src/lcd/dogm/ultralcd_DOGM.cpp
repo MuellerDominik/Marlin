@@ -139,7 +139,12 @@ void MarlinUI::set_font(const MarlinFont font_nr) {
           draw_custom_bootscreen((u8g_pgm_uint8_t*)pgm_read_ptr(&custom_bootscreen_animation[f]), f == 0);
         }
       #else
-        draw_custom_bootscreen(custom_start_bmp);
+        #if ENABLED(DRAW_ALT_BOOTSCREEN)
+          draw_custom_bootscreen(alt_custom_start_bmp);
+        #else
+          draw_custom_bootscreen(custom_start_bmp);
+        #endif
+        
       #endif
       #ifndef CUSTOM_BOOTSCREEN_TIMEOUT
         #define CUSTOM_BOOTSCREEN_TIMEOUT 2500

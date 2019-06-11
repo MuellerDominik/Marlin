@@ -719,8 +719,9 @@
  * Default Ender 3 Pro setting (16 uSteps): { 80, 80, 400, 93 }
  * Default settings: { 80, 80, 4000, 500 }
  * Before: { 160, 160, 800, 186 }
+ * Most recent: { 160, 160, 800, 221 }
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 160, 160, 800, 221 }
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 160, 160, 800, 210 }
 
 /**
  * Default Max Feed Rate (mm/s)
